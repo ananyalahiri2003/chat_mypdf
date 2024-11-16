@@ -24,10 +24,12 @@ Note Ollama runs on http://localhost:11434
 """
 
 import os
+import numpy as np
 import warnings
 import faiss
 import tiktoken
 from dotenv import load_dotenv
+from faiss import IndexFlatL2
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
@@ -78,23 +80,22 @@ def main():
 
     embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url="http://localhost:11434")
     # If we see http://localhost:11434 we see Ollama is running
-    single_vector = embeddings.embed_query("this is some text data")
-    print(f"{len(single_vector)=}")
+    chunk_vectors = [embeddings.embed_query(chunk.page_content) for chunk in chunks]
+    index = faiss.IndexFlatL2(len(chunk_vectors[0]))
 
-    index = faiss.IndexFlatL2(len(single_vector))
     print(f"{index.ntotal=}, {index.d=}")
 
     vector_store = FAISS(
         embedding_function=embeddings,  # Ollama nomic-embed-text
         index=index,  # The index we calced
         docstore=InMemoryDocstore(),  # We will store the documents in memory
-        index_to_docstore_id={},  # An empty dictionary as of now, once we add document to vectorstoe we will have
+        index_to_docstore_id={},  # An empty dictionary as of now, once we add document to vectorstore we will have
         # all document IDs inside this vectorstore
     )
     print(f"{vector_store=}")
 
     # We had already chunked the docs into 321 chunks.
-    ids = vector_store.add_documents(documents=chunks[:5])
+    ids = vector_store.add_documents(documents=chunks)
     print(f"{len(ids)=}")
     print(f"{vector_store.index_to_docstore_id=}")
 
@@ -132,8 +133,8 @@ def main():
         print(doc.page_content)
         print("\n")
 
-    # Now we should be able to see these questions in Langsmith api - go to https://smith.langchain.com/o/d6e8507a-7896-4388-ad97-63a486159534/projects?paginationState=%7B%22pageIndex%22%3A0%2C%22pageSize%22%3A10%7D
-    # Then click chat_pdf project and drill down into documentd
+    # Now we should be able to see these questions in Langsmith api - go to https://smith.langchain.com/o/d6e8507a-7896-4388-ad97-63a486159534/projects?paginationState=%7B%22pageIndex%22%3A0%2C%22pageSize%22%3A10%7D or equivalent
+    # Then click chat_pdf project and drill down into document
 
     question = "What are the benefits of BCAA supplement?"
     docs = retriever.invoke(question)
@@ -148,7 +149,7 @@ def main():
     model.invoke("hi")
     # We go to Langchain https://smith.langchain.com/hub?organizationId=d6e8507a-7896-4388-ad97-63a486159534
     # Look for prompts RAG
-    # We can drill down to RAG prompt within https://smith.langchain.com/hub/jisujiji/rag-prompt-1?organizationId=d6e8507a-7896-4388-ad97-63a486159534
+    # We can drill down to RAG prompt within https://smith.langchain.com/hub/jisujiji/rag-prompt-1?organizationId=d6e8507a-7896-4388-ad97-63a486159534 or equivalent
     # You can also see ChatPromptTempplate towards bottom of each page
     # We use this one https://smith.langchain.com/hub/rlm/rag-prompt?organizationId=d6e8507a-7896-4388-ad97-63a486159534
     prompt = hub.pull("rlm/rag-prompt")
@@ -195,10 +196,6 @@ def main():
     print(f"{output=}")
 
     # We can see the output in Langsmith
-    
-
-
-
 
 
 if __name__ == "__main__":
