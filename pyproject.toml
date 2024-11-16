@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "chat_myPDF"
+version = "0.1.0"
+description = "A project to integrate various tools for pdf handling and chat applications."
+authors = ["ananyalahiri2003 <ananyalahiri2003@yahoo.co.uk>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain-community = "^0.3.7"
+faiss-cpu = "^1.9.0"
+langchain-huggingface = "^0.1.2"
+PyMuPDF = "^1.24.13"
+tiktoken = "^0.8.0"
+langchain-ollama = "^0.2.0"
+python-dotenv = "^1.0.1"
+torch = "2.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
