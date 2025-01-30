@@ -16,6 +16,9 @@ RUN poetry config virtualenvs.create false && poetry install --no-root --no-inte
 # Copy the rest of the files
 COPY . .
 
+# Set right work directory
+WORKDIR /app/src
+
 # Expose ports - FastAPI 7860 Streamlit 8501
 EXPOSE 7860 8501
 
