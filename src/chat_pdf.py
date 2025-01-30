@@ -81,7 +81,7 @@ def main():
     embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url="http://localhost:11434")
     # If we see http://localhost:11434 we see Ollama is running
     chunk_vectors = [embeddings.embed_query(chunk.page_content) for chunk in chunks]
-    index = faiss.IndexFlatL2(len(chunk_vectors[0]))
+    index = IndexFlatL2(len(chunk_vectors[0]))
 
     print(f"{index.ntotal=}, {index.d=}")
 
